@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">DigitalNomadWallet</string>
+
+
+    // categories
+    <string name="bills">Bills</string>
+    <string name="food">Food </string>
+    <string name="education">Education</string>
+    <string name="entertainment">Entertainment</string>
+    <string name="rent">Rent</string>
+    <string name="health">Health</string>
+    <string name="travel">Travel</string>
+    <string name="transportation">Transportation</string>
+    <string name="shopping">Shopping</string>
+    <string name="other">Other</string>
+
+    <string name="salary">Salary</string>
+    <string name="investments">Investments</string>
+    <string name="save">save</string>
+    <string name="all_transactions">all transactions</string>
+
+    <string name="ten_days">10 days</string>
+    <string name="thirty_days">30 days</string>
+    <string name="sixty_days">60 days</string>
+    <string name="ninety_days">90 days</string>
+    <string name="six_months">6 months</string>
+</resources>

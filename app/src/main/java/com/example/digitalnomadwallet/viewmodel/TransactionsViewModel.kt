@@ -2,7 +2,7 @@ package com.example.digitalnomadwallet.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.example.digitalnomadwallet.db.TransactionModel
+import com.example.digitalnomadwallet.model.TransactionModel
 import com.example.digitalnomadwallet.repository.TransactionsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

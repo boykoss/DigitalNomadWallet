@@ -3,6 +3,7 @@ package com.example.digitalnomadwallet.db
 import android.content.Context
 import androidx.room.*
 import com.example.digitalnomadwallet.db.converters.Converters
+import com.example.digitalnomadwallet.model.TransactionModel
 
 @Database(entities = [TransactionModel::class], version = 1)
 @TypeConverters(Converters::class)

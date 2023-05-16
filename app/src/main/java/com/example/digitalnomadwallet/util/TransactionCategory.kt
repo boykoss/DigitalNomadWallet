@@ -1,6 +1,5 @@
-package com.example.digitalnomadwallet.db
+package com.example.digitalnomadwallet.util
 
-import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.example.digitalnomadwallet.R
 

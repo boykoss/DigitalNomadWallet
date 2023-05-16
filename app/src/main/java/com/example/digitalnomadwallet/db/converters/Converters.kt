@@ -1,7 +1,7 @@
 package com.example.digitalnomadwallet.db.converters
 
 import androidx.room.TypeConverter
-import com.example.digitalnomadwallet.db.TransactionCategory
+import com.example.digitalnomadwallet.util.TransactionCategory
 
 class Converters {
 

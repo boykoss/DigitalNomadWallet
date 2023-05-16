@@ -1,6 +1,6 @@
 package com.example.digitalnomadwallet.repository
 
-import com.example.digitalnomadwallet.db.TransactionModel
+import com.example.digitalnomadwallet.model.TransactionModel
 import com.example.digitalnomadwallet.db.TransactionsDatabase
 import kotlinx.coroutines.flow.Flow
 
@@ -12,7 +12,9 @@ class TransactionsRepository(private val db: TransactionsDatabase) {
 
     suspend fun  delete(transaction: TransactionModel) = db.transactionsDao().delete(transaction)
 
-    fun getAllTransactions(): Flow<List<TransactionModel>> = db.transactionsDao().getAllTransactions()
+    fun getAllTransactions(): Flow<List<TransactionModel>> =
+        db.transactionsDao().getAllTransactions()
 
-    fun getTransactionById(id: Int): Flow<List<TransactionModel>> = db.transactionsDao().getTransactionById(id)
+    fun getTransactionById(id: Int): Flow<TransactionModel> =
+        db.transactionsDao().getTransactionById(id)
 }

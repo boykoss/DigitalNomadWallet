@@ -1,7 +1,6 @@
 package com.example.digitalnomadwallet.util
 
 import android.content.Context
-import com.example.digitalnomadwallet.db.TransactionCategory
 
 class Constants(context: Context) {
 

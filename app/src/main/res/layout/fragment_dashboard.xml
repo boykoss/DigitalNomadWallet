@@ -78,8 +78,8 @@
     android:id="@+id/fab_add_transaction"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_gravity="bottom|end"
-    android:layout_margin="10dp"
+    android:layout_gravity="end|bottom"
+    android:layout_margin="40dp"
     android:contentDescription="add transaction"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,57 +1,190 @@
 package com.example.digitalnomadwallet.ui
 
+import android.app.DatePickerDialog
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.digitalnomadwallet.ARG_PARAM1
-import com.example.digitalnomadwallet.ARG_PARAM2
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import com.example.digitalnomadwallet.MainActivity
 import com.example.digitalnomadwallet.R
+import com.example.digitalnomadwallet.databinding.FragmentEditTransactionBinding
 
-/**
- * A simple [Fragment] subclass.
- * Use the [EditTransactionFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class EditTransactionFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+import com.example.digitalnomadwallet.viewmodel.TransactionsViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+import com.example.digitalnomadwallet.model.TransactionModel
+import com.example.digitalnomadwallet.util.Constants
+import com.example.digitalnomadwallet.util.TransactionCategory
+import com.example.digitalnomadwallet.util.getCurrencySymbol
+
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
+import java.lang.Double.parseDouble
+import java.text.SimpleDateFormat
+import java.util.*
+
+
+class EditTransactionFragment : Fragment(R.layout.fragment_edit_transaction) {
+
+    private lateinit var binding: FragmentEditTransactionBinding
+    private val args: EditTransactionFragmentArgs by navArgs()
+    private lateinit var viewModel: TransactionsViewModel
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding = FragmentEditTransactionBinding.bind(view)
+        viewModel = (activity as MainActivity).viewModel
+        setUpViewWithData()
+        binding.btnSaveTransaction.setOnClickListener {
+            validateFields()
+            updateTransaction()
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_edit_transaction, container, false)
-    }
+    private fun setUpViewWithData() {
+        val transaction = args.transaction
+        with(binding.inputFields) {
+            etTransactionTitle.setText(transaction.title)
+            etTransactionAmount.setText(transaction.amount.toString())
+            etTransactionType.apply {
+                setText(transaction.transactionType)
+                setAdapter(
+                    ArrayAdapter(
+                        requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item,
+                        Constants(requireContext()).TRANSACTION_TYPE
+                    )
+                )
+            }
+            etTransactionCategory.apply {
+                setText(getString(transaction.category.description))
+                setAdapter(
+                    ArrayAdapter(
+                        requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item,
+                        Constants(requireContext()).TRANSACTION_CATEGORY
+                    )
+                )
+            }
+            etTransactionDate.apply {
+                setText(transaction.date)
+                isClickable = true
+                isFocusable = true
+                isFocusableInTouchMode = false
+                val myCalendar = Calendar.getInstance()
+                val sdf = SimpleDateFormat(context.getString(R.string.date_format), Locale.ITALIAN)
+                val datePickerOnDateSetListener =
+                    DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
+                        myCalendar.set(Calendar.YEAR, year)
+                        myCalendar.set(Calendar.MONTH, monthOfYear)
+                        myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                        setText(sdf.format(myCalendar.time))
+                    }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment EditTransactionFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            EditTransactionFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                val datePickerDialog = DatePickerDialog(
+                    requireContext(),
+                    datePickerOnDateSetListener,
+                    myCalendar.get(Calendar.YEAR),
+                    myCalendar.get(Calendar.MONTH),
+                    myCalendar.get(Calendar.DAY_OF_MONTH)
+                )
+
+                datePickerDialog.datePicker.maxDate = Date().time
+                setOnClickListener {
+                    datePickerDialog.show()
                 }
             }
+            etTransactionNotes.setText(transaction.note)
+            lifecycleScope.launch {
+                viewModel.selectedCurrency.collect {
+                    tilTransactionAmount.prefixText = getCurrencySymbol(it)
+                }
+            }
+        }
     }
+
+    private fun getNoteFromData(): TransactionModel = binding.inputFields.let {
+        val title = it.etTransactionTitle.text.toString()
+        val amount = parseDouble(it.etTransactionAmount.text.toString())
+        val date = it.etTransactionDate.text.toString()
+        val category = when (it.etTransactionCategory.text.toString()) {
+            getString(R.string.food) -> TransactionCategory.Food
+            getString(R.string.health) -> TransactionCategory.Health
+            getString(R.string.transportation)-> TransactionCategory.Transportation
+            getString(R.string.salary)-> TransactionCategory.Salary
+            getString(R.string.other)-> TransactionCategory.Other
+            else -> TransactionCategory.Other
+        }
+        val type = when(it.etTransactionType.text.toString()){
+            getString(R.string.income) -> "Income"
+            getString(R.string.expenses) -> "Expense"
+            else -> "other"
+        }
+        val note = it.etTransactionNotes.text.toString()
+
+        return TransactionModel(
+            title = title,
+            transactionType = type,
+            amount = amount,
+            category = category,
+            date = date,
+            note = note
+        )
+    }
+
+    private fun validateFields() {
+
+        when {
+            binding.inputFields.etTransactionAmount.text.isNullOrEmpty() -> {
+                Toast.makeText(requireContext(), getString(R.string.missing_field), Toast.LENGTH_SHORT).show()
+                binding.inputFields.etTransactionAmount.error = getString(R.string.required_field)
+
+            }
+            binding.inputFields.etTransactionTitle.text.isNullOrEmpty() -> {
+                Toast.makeText(requireContext(), getString(R.string.missing_field), Toast.LENGTH_SHORT).show()
+                binding.inputFields.etTransactionTitle.error = getString(R.string.required_field)
+            }
+            binding.inputFields.etTransactionCategory.text.isNullOrEmpty() -> {
+                Toast.makeText(requireContext(), getString(R.string.missing_category), Toast.LENGTH_SHORT)
+                    .show()
+            }
+            binding.inputFields.etTransactionType.text.isNullOrEmpty() -> {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.missing_transaction_type
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            binding.inputFields.etTransactionDate.text.isNullOrEmpty() -> {
+                Toast.makeText(requireContext(), getString(R.string.invalid_date), Toast.LENGTH_SHORT)
+                    .show()
+            }
+
+        }
+
+    }
+
+    private fun updateTransaction() {
+
+        if (
+            with(binding.inputFields) {
+                etTransactionDate.text!!.isNotEmpty()
+                etTransactionTitle.text!!.isNotEmpty()
+                etTransactionAmount.text!!.isNotEmpty()
+                etTransactionType.text.isNotEmpty()
+                etTransactionCategory.text.isNotEmpty()
+
+            }
+        ) {
+            viewModel.updateTransaction(getNoteFromData())
+            Snackbar.make(binding.root, getString(R.string.transaction_saved), Snackbar.LENGTH_SHORT)
+                .show()
+            findNavController().navigateUp()
+        }
+    }
+
 }

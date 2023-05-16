@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.digitalnomadwallet.R
 import com.example.digitalnomadwallet.databinding.ListItemTransactionBinding
-import com.example.digitalnomadwallet.db.TransactionModel
+import com.example.digitalnomadwallet.model.TransactionModel
 import com.example.digitalnomadwallet.util.currencyFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 
